@@ -5,10 +5,14 @@ import 'package:seekaclimb/enums/e_hold_type.dart';
 import 'package:seekaclimb/models/cml_circle.dart';
 import 'package:seekaclimb/models/cml_point.dart';
 import 'package:seekaclimb/models/cml_route.dart';
+import 'package:seekaclimb/models/cml_route_point.dart';
 import 'package:seekaclimb/widgets/cw_back_button.dart';
 import 'package:seekaclimb/widgets/cw_delete_button.dart';
 import 'package:seekaclimb/widgets/cw_hold_type_toolbar.dart';
+import 'package:seekaclimb/widgets/cw_route_point_toolbar.dart';
 import 'package:seekaclimb/widgets/cw_validate_button.dart';
+
+enum RouteEditorMode { circle, point }
 
 class CvlRouteEditor extends StatefulWidget {
   const CvlRouteEditor({super.key});
@@ -21,8 +25,15 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
   int _selectedElementIndex = -1;
   double _initialElementSize = 0.0;
   Offset? _tapPosition;
+  Offset? _previousTapPosition;
   final TransformationController _transformationController =
       TransformationController();
+
+  RouteEditorMode _mode = RouteEditorMode.circle;
+
+  // Variables globales pour les propriétés des route points
+  Color _globalRoutePointColor = Colors.red;
+  double _globalRoutePointWidth = 2.0;
 
   CmlRoute route = CmlRoute(
     name: 'Example Route',
@@ -38,9 +49,7 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
     }
 
     setState(() {
-      _selectedElementIndex = (index == _selectedElementIndex)
-          ? -1
-          : index;
+      _selectedElementIndex = (index == _selectedElementIndex) ? -1 : index;
     });
   }
 
@@ -48,6 +57,7 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
     for (CalEditorElement element in route.elements) {
       element.isSelected = false;
     }
+
     setState(() {
       _selectedElementIndex = -1;
     });
@@ -59,10 +69,20 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
       return [];
     }
     final element = route.elements[_selectedElementIndex];
+
     if (element is CmlCircle) {
       return element.holdTypes;
     }
+
     return [];
+  }
+
+  bool _isSelectedElementCircle() {
+    if (_selectedElementIndex == -1 ||
+        _selectedElementIndex >= route.elements.length) {
+      return false;
+    }
+    return route.elements[_selectedElementIndex] is CmlCircle;
   }
 
   void _deleteSelectedElement() {
@@ -76,30 +96,61 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
     }
   }
 
-  void _createCircle() {
+  CmlPoint _convertTapPositionToPoint(Offset tapPosition) {
     final Matrix4 matrix = _transformationController.value;
-    final Offset globalPosition = _tapPosition!;
     final Matrix4 invertedMatrix = Matrix4.inverted(matrix);
-    final Offset localPosition = MatrixUtils.transformPoint(
-      invertedMatrix,
-      globalPosition,
-    );
 
-    final newElementIndex = route.elements.length;
-    final newCircle = CmlCircle(
-      size: 30 / _transformationController.value.getMaxScaleOnAxis(),
-      point: CmlPoint(x: localPosition.dx, y: localPosition.dy),
-      holdTypes: [],
-      onElementTaped: () {
-        _selectElement(newElementIndex);
-      },
+    return CmlPoint.fromOffset(
+      offset: MatrixUtils.transformPoint(invertedMatrix, tapPosition),
     );
+  }
 
-    setState(() {
-      _selectedElementIndex = newElementIndex;
-      route.elements.add(newCircle);
-      newCircle.isSelected = true;
-    });
+  void _createElement() {
+    if (_tapPosition case final Offset position) {
+      CmlPoint point = _convertTapPositionToPoint(position);
+
+      final newElementIndex = route.elements.length;
+      CalEditorElement? newElement;
+
+      switch (_mode) {
+        case RouteEditorMode.circle:
+          newElement = CmlCircle(
+            size: 30 / _transformationController.value.getMaxScaleOnAxis(),
+            point: point,
+            holdTypes: [],
+            onElementTaped: () {
+              _selectElement(newElementIndex);
+            },
+          );
+
+          _selectedElementIndex = newElementIndex;
+          newElement.isSelected = true;
+
+          break;
+        case RouteEditorMode.point:
+          if (_previousTapPosition case final Offset previousPosition) {
+            newElement = CmlRoutePoint(
+              point: point,
+              secondPoint: _convertTapPositionToPoint(previousPosition),
+              lineColor: _globalRoutePointColor,
+              lineWidth: _globalRoutePointWidth,
+              onElementTaped: () {
+                _selectElement(newElementIndex);
+              },
+              onElementChanged: () {
+                setState(() {});
+              },
+            );
+          }
+          break;
+      }
+
+      if (newElement != null) {
+        setState(() {
+          route.elements.add(newElement!);
+        });
+      }
+    }
   }
 
   void _onHoldTypeToggled(EHoldType holdType) {
@@ -123,6 +174,54 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
     }
   }
 
+  void _onRoutePointColorChanged(Color color) {
+    _globalRoutePointColor = color;
+
+    // Mettre à jour tous les route points existants
+    for (CalEditorElement element in route.elements) {
+      if (element is CmlRoutePoint) {
+        element.updateLineColor(color);
+      }
+    }
+
+    setState(() {});
+  }
+
+  void _onRoutePointWidthChanged(double width) {
+    _globalRoutePointWidth = width;
+
+    // Mettre à jour tous les route points existants
+    for (CalEditorElement element in route.elements) {
+      if (element is CmlRoutePoint) {
+        element.updateLineWidth(width);
+      }
+    }
+
+    setState(() {});
+  }
+
+  void _removeLastPoint() {
+    List<CmlRoutePoint> routePointList = route.elements
+        .whereType<CmlRoutePoint>()
+        .toList();
+    if (routePointList.isNotEmpty) {
+      route.elements.remove(routePointList.last);
+
+      List<CmlRoutePoint> remainingRoutePoints = route.elements
+          .whereType<CmlRoutePoint>()
+          .toList();
+
+      if (remainingRoutePoints.isNotEmpty) {
+        _tapPosition = remainingRoutePoints.last.point.toOffset();
+      } else {
+        _previousTapPosition = null;
+        _tapPosition = null;
+      }
+    }
+
+    setState(() {});
+  }
+
   @override
   void dispose() {
     for (CalEditorElement element in route.elements) {
@@ -139,13 +238,21 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
         children: [
           GestureDetector(
             onTapDown: (TapDownDetails details) {
-              _tapPosition = details.localPosition;
+              if (_tapPosition == null) {
+                _tapPosition = details.localPosition;
+              } else {
+                if (_mode == RouteEditorMode.point) {
+                  _previousTapPosition = _tapPosition;
+                }
+
+                _tapPosition = details.localPosition;
+              }
             },
             onTap: () {
               if (_selectedElementIndex != -1) {
                 _deselectAll();
-              } else if (_tapPosition != null) {
-                _createCircle();
+              } else {
+                _createElement();
               }
             },
             child: InteractiveViewer(
@@ -211,9 +318,39 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
             ),
           ),
 
-          // Barre d'outils flottante en bas
           CwAnimatedPositionedWidget(
-            isVisible: _selectedElementIndex != -1,
+            isVisible: _mode == RouteEditorMode.point,
+            bottom: 145.0,
+            right: 12.0,
+            slideBeginOffset: Offset(1.0, 1.5),
+            emptyKey: const ValueKey('empty-delete-2'),
+            child: CwDeleteButton(
+              key: const ValueKey('delete-2'),
+              onPressed: _removeLastPoint,
+            ),
+          ),
+
+          Positioned(
+            right: 20,
+            top: 29,
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _tapPosition = null;
+                  _previousTapPosition = null;
+                  _mode = _mode == RouteEditorMode.circle
+                      ? RouteEditorMode.point
+                      : RouteEditorMode.circle;
+                });
+              },
+              child: Text("data"),
+            ),
+          ),
+
+          // Barre d'outils flottante en bas pour les cercles
+          CwAnimatedPositionedWidget(
+            isVisible:
+                _selectedElementIndex != -1 && _isSelectedElementCircle(),
             bottom: 0,
             left: 0,
             right: 0,
@@ -223,6 +360,23 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
               key: const ValueKey('toolbar'),
               selectedHoldTypes: _getSelectedHoldTypes(),
               onHoldTypeToggled: _onHoldTypeToggled,
+            ),
+          ),
+
+          // Barre d'outils flottante en bas pour les route points
+          CwAnimatedPositionedWidget(
+            isVisible: _mode == RouteEditorMode.point,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            slideBeginOffset: const Offset(0.0, 1.0),
+            emptyKey: const ValueKey('empty-route-toolbar'),
+            child: CwRoutePointToolbar(
+              key: const ValueKey('route-toolbar'),
+              selectedColor: _globalRoutePointColor,
+              selectedWidth: _globalRoutePointWidth,
+              onColorChanged: _onRoutePointColorChanged,
+              onWidthChanged: _onRoutePointWidthChanged,
             ),
           ),
         ],
