@@ -1,8 +1,6 @@
 import 'package:commun/commun.dart';
 import 'package:flutter/material.dart';
-import 'package:seekaclimb/views/cvl_odin.dart';
 import 'package:seekaclimb/views/cvl_route_editor.dart';
-import 'package:seekaclimb/map_demo.dart';
 
 class CvlHome extends StatefulWidget {
   const CvlHome({super.key});
@@ -49,29 +47,7 @@ class _CvlHomeState extends State<CvlHome> {
         onPressed: _onLocationButtonPressed,
         child: Icon(Icons.near_me_rounded),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.pushPage(CvlOdin());
-              break;
-            case 1:
-              context.pushPage(CvlRouteEditor());
-              break;
-            case 2:
-              context.pushPage(MapExamplePage());
-              break;
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.edit),
-            label: 'Edit Route',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-        ],
-      ),
+      
     );
   }
 }

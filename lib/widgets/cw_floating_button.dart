@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-class CwDeleteButton extends StatelessWidget {
+class CwFloatingButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  final Color? backgroundColor;
+  final Color backgroundColor;
   final Color? iconColor;
   final double? size;
-  final IconData? icon;
+  final IconData icon;
 
-  const CwDeleteButton({
+  const CwFloatingButton({
     super.key,
     this.onPressed,
-    this.backgroundColor,
+    required this.backgroundColor,
     this.iconColor,
     this.size = 56.0,
-    this.icon = Icons.delete_outline_rounded,
+    required this.icon,
   });
 
   @override
@@ -25,7 +25,7 @@ class CwDeleteButton extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: backgroundColor ?? Color(0xFFEF4444),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(16.0),
           boxShadow: [
             BoxShadow(

@@ -3,20 +3,16 @@ import 'package:seekaclimb/abstract/cal_editor_element.dart';
 import 'package:seekaclimb/models/cml_point.dart';
 
 class CmlRoutePoint extends CalEditorElement {
-  CmlPoint secondPoint;
   Color lineColor;
   double lineWidth;
-
   CmlRoutePoint({
     required CmlPoint point,
-    required this.secondPoint,
     this.lineColor = Colors.red,
     this.lineWidth = 2.0,
     VoidCallback? onElementTaped,
     VoidCallback? onElementChanged,
   }) : super() {
     this.point = point;
-    size = 0;
     this.onElementTaped = onElementTaped;
     this.onElementChanged = onElementChanged;
   }
@@ -34,71 +30,53 @@ class CmlRoutePoint extends CalEditorElement {
   @override
   Map<String, dynamic> toMap() => {
     'type': 'route_point',
-    'lineColor': lineColor,
+    'point': point.toMap(),
+    'lineColor': lineColor.toARGB32(),
     'lineWidth': lineWidth,
   };
 
   @override
   Widget toWidget() {
-    return GestureDetector(
-      onTap: onElementTaped,
-      child: CustomPaint(
-        painter: RouteLinePainter(
-          startPoint: point,
-          endPoint: secondPoint,
-          color: lineColor,
-          width: lineWidth,
-        ),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
-        ),
-      ),
+    return ValueListenableBuilder<CmlPoint>(
+      valueListenable: pointNotifier,
+      builder: (context, point, child) {
+        return Positioned(
+          left: point.x,
+          top: point.y,
+          child: GestureDetector(
+            onTap: isInteractive ? onElementTaped : null,
+            onPanUpdate: (isSelected && isInteractive)
+                ? (details) {
+                    final newPoint = CmlPoint(
+                      x: point.x + details.delta.dx * 2,
+                      y: point.y + details.delta.dy * 2,
+                    );
+
+                    this.point = newPoint;
+                  }
+                : null,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.blue : lineColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.black.withValues(alpha: 0.3),
+                  width: isSelected ? 2.0 : 1.0,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   @override
-  void updateScale(double scale) {}
-}
-
-class RouteLinePainter extends CustomPainter {
-  final CmlPoint startPoint;
-  final CmlPoint endPoint;
-  final Color color;
-  final double width;
-
-  RouteLinePainter({
-    required this.startPoint,
-    required this.endPoint,
-    this.color = Colors.red,
-    this.width = 2.0,
-  });
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color
-      ..strokeWidth = width
-      ..style = PaintingStyle.stroke;
-
-    // Dessiner la ligne entre les deux points
-    canvas.drawLine(
-      Offset(startPoint.x, startPoint.y),
-      Offset(endPoint.x, endPoint.y),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    if (oldDelegate is RouteLinePainter) {
-      return oldDelegate.startPoint.x != startPoint.x ||
-          oldDelegate.startPoint.y != startPoint.y ||
-          oldDelegate.endPoint.x != endPoint.x ||
-          oldDelegate.endPoint.y != endPoint.y ||
-          oldDelegate.color != color ||
-          oldDelegate.width != width;
-    }
-    return true;
+  void updateScale(double scale) {
+    return;
   }
 }
