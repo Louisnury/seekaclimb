@@ -5,7 +5,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:seekaclimb/models/cml_place.dart';
 import 'package:seekaclimb/models/cml_user.dart';
 import 'package:seekaclimb/views/cvl_home.dart';
-import 'package:seekaclimb/views/cvl_place.dart';
+import 'package:seekaclimb/views/cvl_places.dart';
 import 'package:seekaclimb/views/cvl_route_editor.dart';
 
 Future<void> main() async {
@@ -47,6 +47,9 @@ class MyApp extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _initializeAppData() async {
+    // Initialiser le DatabaseManager en premier
+    await DatabaseManager.instance.initialize();
+
     final results = await Future.wait([CmlUser.get(), CmlPlace.get()]);
 
     return {
@@ -60,13 +63,13 @@ class MyApp extends StatelessWidget {
     CmlPlace? currentPlace = data['currentPlace'];
 
     return ModelBox(
-      models: {"user": user, "currentPlace": currentPlace},
+      models: {"user": user, "currentPlace": currentPlace, "currentWall": null},
       child: NavigatorWidget(
         initialPage: const CvlHome(),
         config: const NavigatorConfig(),
         routes: {
           '/home': (context) => const CvlHome(),
-          '/place': (context) => const CvlPlace(),
+          '/place': (context) => const CvlPlaces(),
           '/editor': (context) => const CvlRouteEditor(),
         },
         bottomNavigationItems: const [

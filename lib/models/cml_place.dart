@@ -105,4 +105,16 @@ class CmlPlace extends Serializable {
       return false;
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is CmlPlace) {
+      return id == other.id;
+    }
+
+    return false;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
