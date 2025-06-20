@@ -85,7 +85,9 @@ class CmlCircle extends CalEditorElement {
                               size: Size(size * 2, size * 2),
                               painter: StartDiagonalLinesPainter(radius: size),
                             ),
-                          ), // Icône drapeau pour prise de fin (en haut à droite)
+                          ),
+
+                        // Icône drapeau pour prise de fin (en haut à droite)
                         if (holdTypes.contains(EHoldType.end))
                           Positioned(
                             left: extraMargin + size + (size * 0.8),
@@ -122,6 +124,7 @@ class CmlCircle extends CalEditorElement {
 
   @override
   Map<String, dynamic> toMap() => {
+    'type': 'circle',
     'holdTypes': holdTypes.map((type) => type.index).toList(),
     'point': point.toMap(),
     'radius': size,

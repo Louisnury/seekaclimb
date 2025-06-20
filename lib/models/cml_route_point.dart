@@ -3,12 +3,8 @@ import 'package:seekaclimb/abstract/cal_editor_element.dart';
 import 'package:seekaclimb/models/cml_point.dart';
 
 class CmlRoutePoint extends CalEditorElement {
-  Color lineColor;
-  double lineWidth;
   CmlRoutePoint({
     required CmlPoint point,
-    this.lineColor = Colors.red,
-    this.lineWidth = 2.0,
     VoidCallback? onElementTaped,
     VoidCallback? onElementChanged,
   }) : super() {
@@ -16,24 +12,19 @@ class CmlRoutePoint extends CalEditorElement {
     this.onElementTaped = onElementTaped;
     this.onElementChanged = onElementChanged;
   }
-
-  void updateLineColor(Color color) {
-    lineColor = color;
-    onElementChanged?.call();
-  }
-
-  void updateLineWidth(double width) {
-    lineWidth = width;
-    onElementChanged?.call();
-  }
+  static double lineWidth = 2.0;
 
   @override
   Map<String, dynamic> toMap() => {
     'type': 'route_point',
     'point': point.toMap(),
-    'lineColor': lineColor.toARGB32(),
-    'lineWidth': lineWidth,
   };
+
+  static CmlRoutePoint fromMap(Map<String, dynamic> map) {
+    return CmlRoutePoint(
+      point: CmlPoint.fromMap(map['point'] as Map<String, dynamic>),
+    );
+  }
 
   @override
   Widget toWidget() {
@@ -59,7 +50,7 @@ class CmlRoutePoint extends CalEditorElement {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: isSelected ? Colors.blue : lineColor,
+                color: isSelected ? Colors.blue : Colors.black,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected

@@ -38,11 +38,8 @@ abstract class CalEditorElement extends Serializable {
   Widget toWidget();
 
   /// Méthode de désérialisation à implémenter par les classes concrètes
-  static CalEditorElement fromMap(Map<String, dynamic> map) {
-    throw UnimplementedError(
-      'La méthode fromMap doit être implémentée par chaque classe concrète.',
-    );
-  }
+  static CalEditorElement fromMap(Map<String, dynamic> map) =>
+      throw UnimplementedError();
 
   void updateScale(double scale);
 

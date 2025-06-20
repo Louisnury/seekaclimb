@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:seekaclimb/models/cml_place.dart';
 import 'package:seekaclimb/models/cml_user.dart';
+import 'package:seekaclimb/models/cml_wall.dart';
 import 'package:seekaclimb/views/cvl_home.dart';
 import 'package:seekaclimb/views/cvl_places.dart';
 import 'package:seekaclimb/views/cvl_route_editor.dart';
@@ -70,7 +71,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/home': (context) => const CvlHome(),
           '/place': (context) => const CvlPlaces(),
-          '/editor': (context) => const CvlRouteEditor(),
+          '/editor': (context) => CvlRouteEditor(wall: CmlWall(id: 0, name: '')),
         },
         bottomNavigationItems: const [
           BottomNavigationBarItem(

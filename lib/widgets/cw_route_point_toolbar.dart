@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 
-class CwRoutePointToolbar extends StatelessWidget {
-  final Color selectedColor;
-  final double selectedWidth;
-  final Function(Color) onColorChanged;
+class CwRoutePointToolbar extends StatefulWidget {
   final Function(double) onWidthChanged;
 
   const CwRoutePointToolbar({
     super.key,
-    required this.selectedColor,
-    required this.selectedWidth,
-    required this.onColorChanged,
     required this.onWidthChanged,
   });
-  static const List<Color> _predefinedColors = [
-    Colors.yellow,
-    Colors.orange,
-    Colors.blue,
-    Colors.red,
-    Colors.black,
-    Colors.white,
-    Colors.green,
-  ];
+
+  @override
+  State<CwRoutePointToolbar> createState() => _CwRoutePointToolbarState();
+}
+
+class _CwRoutePointToolbarState extends State<CwRoutePointToolbar> {
+  double _selectedWidth = 2.0;
+
+  double get currentWidth => _selectedWidth;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,65 +42,6 @@ class CwRoutePointToolbar extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-
-          // Section couleurs
-          Row(
-            children: [
-              const Text(
-                'Couleur',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  height: 32,
-                  child: Row(
-                    children: _predefinedColors.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final color = entry.value;
-                      final isSelected = color == selectedColor;
-                      final isLastItem = index == _predefinedColors.length - 1;
-
-                      return Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(right: isLastItem ? 0 : 6),
-                          child: GestureDetector(
-                            onTap: () => onColorChanged(color),
-                            child: Container(
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.black
-                                      : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                          blurRadius: 3,
-                                          offset: const Offset(0, 1),
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
           // Section épaisseur
           Row(
             children: [
@@ -115,7 +51,7 @@ class CwRoutePointToolbar extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${selectedWidth.toInt()}px',
+                '${_selectedWidth.toInt()}px',
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.blue,
@@ -138,11 +74,16 @@ class CwRoutePointToolbar extends StatelessWidget {
                     trackHeight: 3,
                   ),
                   child: Slider(
-                    value: selectedWidth,
+                    value: _selectedWidth,
                     min: 1.0,
                     max: 15.0,
                     divisions: 14,
-                    onChanged: onWidthChanged,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedWidth = value;
+                      });
+                      widget.onWidthChanged(value);
+                    },
                   ),
                 ),
               ),

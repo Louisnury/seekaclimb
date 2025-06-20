@@ -126,8 +126,31 @@ class _CvlPlacesState extends State<CvlPlaces> {
           return ListTile(
             title: Text(route.name),
             subtitle: Text(route.description ?? 'No description available'),
-            onTap: () {
-              context.pushPage(CvlRouteEditor(route: route));
+            onTap: () async {
+              CmlWall? wall;
+              try {
+                CplWall wallProvider = CplWall();
+
+                await wallProvider.loadData(queryParams: {'id': route.wallId});
+
+                if (wallProvider.items.isEmpty) {
+                  throw Exception('Wall not found');
+                }
+
+                wall = wallProvider.items.first;
+              } catch (e) {
+                // Afficher une erreur si le mur n'est pas trouvé
+                if (context.mounted) {
+                  context.showError(
+                    'Impossible de charger le mur associé à la route',
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                context.pushPage(CvlRouteEditor(wall: wall, route: route));
+              }
             },
           );
         },

@@ -7,7 +7,7 @@ extension EHoldTypeExtension on EHoldType {
       1 => EHoldType.end,
       2 => EHoldType.foot,
       3 => EHoldType.crux,
-      _ => throw ArgumentError('Index $index is not valid for EHoldType'),
+      _ => throw ArgumentError('Index $index invalide pour EHoldType'),
     };
   }
 }
