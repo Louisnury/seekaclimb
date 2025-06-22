@@ -83,13 +83,17 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
     return Scaffold(
       body: Stack(
         children: [
-          Editor(
+          CwEditor(
             controller: _controller,
             createElementCallback: (position) {
-              final CalEditorElement newElement = mode == 0
-                  ? CmlCircle(point: position)
-                  : CmlRoutePoint(point: position);
-              newElement.isSelected = true;
+              final CalEditorElement newElement;
+              if (mode == 0) {
+                newElement = CmlCircle(point: position);
+                newElement.isSelected = true;
+              } else {
+                newElement = CmlRoutePoint(point: position);
+              }
+
               return newElement;
             },
             backgroundWidget: widget.wall.imageUrl != null

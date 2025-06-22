@@ -73,7 +73,7 @@ class EditorController extends ChangeNotifier {
   }
 
   /// Ajoute un élément à la route
-  void addElement(CalEditorElement element) {
+  void addElement(CalEditorElement element, {bool select = true}) {
     _elements.add(element);
     final int newElementIndex = _elements.length - 1;
 
@@ -82,8 +82,10 @@ class EditorController extends ChangeNotifier {
 
     // Désélectionner tous les autres éléments et sélectionner le nouveau
     _deselectAllSilent();
-    _selectedElementIndex = newElementIndex;
-    element.isSelected = true;
+    if (select) {
+      _selectedElementIndex = newElementIndex;
+      element.isSelected = true;
+    }
 
     notifyListeners();
   }
@@ -94,6 +96,9 @@ class EditorController extends ChangeNotifier {
       elements[_selectedElementIndex].dispose();
       elements.removeAt(_selectedElementIndex);
       _selectedElementIndex = -1;
+
+      // Reconfigurer tous les callbacks après suppression
+      _configureElementCallbacks();
       notifyListeners();
     }
   }
@@ -111,6 +116,8 @@ class EditorController extends ChangeNotifier {
         _selectedElementIndex--;
       }
 
+      // Reconfigurer tous les callbacks après suppression
+      _configureElementCallbacks();
       notifyListeners();
     }
   }
@@ -163,20 +170,6 @@ class EditorController extends ChangeNotifier {
     );
   }
 
-  /// Applique un zoom sur un point spécifique
-  void zoomToPoint(Offset focalPoint, double scale) {
-    final Matrix4 matrix = _transformationController.value;
-    final Matrix4 newMatrix = matrix.clone();
-
-    // Appliquer le zoom centré sur le point focal
-    newMatrix.translate(focalPoint.dx, focalPoint.dy);
-    newMatrix.scale(scale);
-    newMatrix.translate(-focalPoint.dx, -focalPoint.dy);
-
-    _transformationController.value = newMatrix;
-    notifyListeners();
-  }
-
   /// Configure les callbacks pour tous les éléments
   void _configureElementCallbacks() {
     for (int i = 0; i < elements.length; i++) {
@@ -220,7 +213,6 @@ class EditorController extends ChangeNotifier {
     if (_selectedElementIndex != -1) {
       deselectAll();
     }
-    // L'ajout d'un élément est par l'éditeur via createElementCallback
   }
 
   /// Gère le tap down sur l'éditeur

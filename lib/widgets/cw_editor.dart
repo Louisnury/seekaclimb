@@ -5,13 +5,13 @@ import 'package:seekaclimb/controllers/editor_controller.dart';
 
 enum EditorMode { edit, view }
 
-class Editor extends StatefulWidget {
+class CwEditor extends StatefulWidget {
   final EditorController? controller;
   final CalEditorElement Function(CmlPoint point) createElementCallback;
   final List<CustomPainter> Function()? paintersBuilder;
   final Widget backgroundWidget;
 
-  const Editor({
+  const CwEditor({
     super.key,
     this.controller,
     required this.createElementCallback,
@@ -20,10 +20,10 @@ class Editor extends StatefulWidget {
   });
 
   @override
-  EditorState createState() => EditorState();
+  CwEditorState createState() => CwEditorState();
 }
 
-class EditorState extends State<Editor> {
+class CwEditorState extends State<CwEditor> {
   late final EditorController _controller;
 
   @override

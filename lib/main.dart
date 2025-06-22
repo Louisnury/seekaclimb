@@ -6,8 +6,8 @@ import 'package:seekaclimb/models/cml_place.dart';
 import 'package:seekaclimb/models/cml_user.dart';
 import 'package:seekaclimb/models/cml_wall.dart';
 import 'package:seekaclimb/views/cvl_home.dart';
+import 'package:seekaclimb/views/cvl_map_editor.dart';
 import 'package:seekaclimb/views/cvl_places.dart';
-import 'package:seekaclimb/views/cvl_route_editor.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/home': (context) => const CvlHome(),
           '/place': (context) => const CvlPlaces(),
-          '/editor': (context) => CvlRouteEditor(wall: CmlWall(id: 0, name: '')),
+          '/editor': (context) => CvlMapEditor(wall: CmlWall(id: 0, name: '')),
         },
         bottomNavigationItems: const [
           BottomNavigationBarItem(
