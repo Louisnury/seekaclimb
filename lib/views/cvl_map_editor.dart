@@ -4,17 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:seekaclimb/models/cml_point.dart';
-import 'package:seekaclimb/models/cml_route.dart';
 import 'package:seekaclimb/models/cml_geo_route_point.dart';
-import 'package:seekaclimb/models/cml_wall.dart';
 import 'package:seekaclimb/widgets/cw_editor.dart';
 import 'package:seekaclimb/controllers/editor_controller.dart';
 
 class CvlMapEditor extends StatefulWidget {
-  final CmlWall wall;
-  final CmlRoute? route;
-
-  const CvlMapEditor({super.key, required this.wall, this.route});
+  const CvlMapEditor({super.key});
 
   @override
   CvlMapEditorState createState() => CvlMapEditorState();
@@ -52,7 +47,7 @@ class CvlMapEditorState extends State<CvlMapEditor> {
       _controller.deselectAll();
     } else {
       final geoPoint = CmlGeoRoutePoint(point: CmlPoint.fromLatLng(position));
-      _controller.addElement(geoPoint);
+      _controller.addElement(geoPoint, select: false);
 
       _addMarker(geoPoint);
       setState(() {});

@@ -89,7 +89,6 @@ class CvlRouteEditorState extends State<CvlRouteEditor> {
               final CalEditorElement newElement;
               if (mode == 0) {
                 newElement = CmlCircle(point: position);
-                newElement.isSelected = true;
               } else {
                 newElement = CmlRoutePoint(point: position);
               }
